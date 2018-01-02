@@ -1,0 +1,13 @@
+# depslib dependency file v1.0
+1514565364 source:/home/mateusz/Laboratoria/PRI3 codeblocks/Lab3/LinkedLists.c
+	"LinkedLists.h"
+
+1514737125 /home/mateusz/Laboratoria/PRI3 codeblocks/Lab3/LinkedLists.h
+
+1514885181 source:/home/mateusz/Laboratoria/PRI3 codeblocks/Lab3/main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<assert.h>
+	"LinkedLists.h"
+
