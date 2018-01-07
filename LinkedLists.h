@@ -1,6 +1,8 @@
 #ifndef LINKED_LISTS
 #define LINKED_LISTS
 
+#define MAX_CHARS 20
+
 struct sIntNode
 {
   unsigned int value;
@@ -9,7 +11,7 @@ struct sIntNode
 
 struct sStringNode
 {
-  char string[21];
+  char string[MAX_CHARS + 1];
   struct sStringNode* next;
   struct sIntNode* first;
 };
