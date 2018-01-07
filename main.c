@@ -13,18 +13,17 @@ void printLists(StringNode* first);
 void sortIntNodes(IntNode* first);
 void cleanStringNodes(StringNode* node);
 void cleanIntNodes(IntNode* node);
+void clean(StringNode* node);
+void sort(StringNode* node);
+void processCommandLine(StringNode* first);
 
 void main()
 {
   StringNode* node = readData();
-  StringNode* lastStringNode = node;
-  while(lastStringNode != NULL)
-  {
-    sortIntNodes(lastStringNode->first);
-    lastStringNode = lastStringNode->next;
-  }
-  printLists(node);
-  cleanStringNodes(node);
+  sort(node);
+  puts("Read all data");
+  processCommandLine(node);
+  clean(node);
 }
 
 StringNode* readData()
@@ -48,7 +47,7 @@ StringNode* readData()
   {
       if( ! (fgets(lineBuffer, bufferSize, stdin) && isLineCorrect(lineBuffer, delimeters)) )
       {
-        puts("Niepoprawna linia");
+        puts("Incorrect line");
         continue;
       }
 
@@ -87,25 +86,34 @@ StringNode* readData()
   //koniec wczytywania
 
   StringNode* beginning = stringRoot->next;
+  lastStringNode->next = beginning;
   free(stringRoot);
   free(intRoot);
   free(lineBuffer);
   return beginning;
 }
 
+void clean(StringNode* node)
+{
+  StringNode* first = node->next;
+  node->next = NULL;
+  cleanStringNodes(first);
+}
 void cleanStringNodes(StringNode* node)
 {
-  if(node->next != NULL)
-    cleanStringNodes(node->next);
-  if(node->first != NULL)
-    cleanIntNodes(node->first);
-  free(node);
+    if(node->next != NULL)
+      cleanStringNodes(node->next);
+    if(node->first != NULL)
+      cleanIntNodes(node->first);
+    free(node);
+    node = NULL;
 }
 void cleanIntNodes(IntNode* node)
 {
   if(node->next != NULL)
     cleanIntNodes(node->next);
   free(node);
+  node = NULL;
 }
 
 int isLineCorrect(const char* line, const char* delimeters)
@@ -161,7 +169,7 @@ int testLineCorrect()
   while(!emptyLine())
   {
     fgets(lineBuffer, bufferSize, stdin);
-    if(!isLineCorrect(lineBuffer, delimeters)) puts("Niepoprawna linia");
+    if(!isLineCorrect(lineBuffer, delimeters)) puts("Incorrect line");
   }
   free(lineBuffer);
 }
@@ -212,4 +220,116 @@ void sortIntNodes(IntNode* first)
     }
     currentNode = first;
   }
+}
+
+void sort(StringNode* node)
+{
+  StringNode* lastStringNode = node;
+  StringNode* first = node;
+  if(lastStringNode != NULL)
+  {
+    sortIntNodes(lastStringNode->first);
+    lastStringNode = lastStringNode->next;
+  }
+  while(lastStringNode != NULL && first != lastStringNode)
+  {
+    sortIntNodes(lastStringNode->first);
+    lastStringNode = lastStringNode->next;
+  }
+}
+
+void processCommandLine(StringNode* first)
+{
+  const int bufferSize = 1024;
+  char* const lineBuffer = malloc(sizeof(char) * bufferSize);
+  int intBuffer = -1;
+  memset(lineBuffer, '\0', bufferSize);
+  StringNode* current = first;
+  char stringBuffer[128];
+  memset(stringBuffer, '\0', 128);
+
+  while(fgets(lineBuffer, bufferSize, stdin))
+  {
+    if(sscanf(lineBuffer, "%127s", stringBuffer) && !strcmp("next", stringBuffer))
+    {
+        if(current == NULL)
+        {
+          puts("Empty list");
+          return;
+        }
+        else
+        {
+          current = current->next;
+        }
+        puts("Moved to the next element");
+    }
+    else if(sscanf(lineBuffer, "%127s", stringBuffer) && !strcmp("delete", stringBuffer))
+    {
+      StringNode* toDelete = current->next;
+      if(toDelete == current)
+      {
+        puts("Only 1 link - can't delete");
+        continue;
+      }
+      StringNode* next = toDelete->next;
+      toDelete->next = NULL;
+      current->next = next;
+      cleanStringNodes(toDelete);
+      puts("Deleted");
+    }
+    else if(sscanf(lineBuffer, "add %d", &intBuffer))
+    {
+      StringNode* toAdd = current->next;
+      if(intBuffer <= 0)
+      {
+        puts("Incorrect number");
+      }
+      else
+      {
+        if(toAdd->first == NULL)
+        {
+          toAdd->first = malloc(sizeof(IntNode));
+          toAdd->first->value = intBuffer;
+          toAdd->first->next = NULL;
+        }
+        else
+        {
+          IntNode* last = toAdd->first;
+          while(last->next != NULL)
+          {
+            last = last->next;
+          }
+          last->next = malloc(sizeof(IntNode));
+          last->next->value = intBuffer;
+          last->next->next = NULL;
+          puts("Last");
+          sortIntNodes(toAdd->first);
+          printf("Added %d\n", intBuffer);
+        }
+      }
+    }
+    else if(sscanf(lineBuffer, "%127s", stringBuffer) && !strcmp("print", stringBuffer))
+    {
+      StringNode* nodeToPrint = current->next;
+      printf("%s", nodeToPrint->string);
+      IntNode* last = nodeToPrint->first;
+      while(last != NULL)
+      {
+        if(last->value != 0)
+          printf(" %d", last->value);
+        last = last->next;
+      }
+      printf("\n");
+    }
+    else if(sscanf(lineBuffer, "%127s", stringBuffer) && !strcmp("exit", stringBuffer))
+    {
+      free(lineBuffer);
+      return;
+    }
+    else
+    {
+
+    }
+  }
+  free(lineBuffer);
 }
