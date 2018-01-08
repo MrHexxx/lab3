@@ -1,0 +1,26 @@
+raz 1 2 3 0
+dwa 1 2 0
+trzy 1 0
+
+print
+next
+print
+next
+print
+next
+add 4
+next
+add 4
+next
+add 4
+next
+print
+next
+print
+next
+print
+next
+delete
+delete
+print
+exit

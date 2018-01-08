@@ -5,23 +5,28 @@
 #include <malloc.h>
 #include "LinkedLists.h"
 
-StringNode* readData();
-int isLineCorrect(const char* line, const char* delimeters);
-int emptyLine();
-int testLineCorrect();
-void printLists(StringNode* first);
+StringNode* readData(); //wczytuje wszystkie dane, jednak lista StringNode jest zapetlona
+int isLineCorrect(const char* line, const char* delimeters);//sprawdza czy linia jest poprawnie sformatowana
+int emptyLine();//czy wczytano pusta linie? przerwanie dalszego wczytywania danych
 void sortIntNodes(IntNode* first);
-void cleanStringNodes(StringNode* node);
-void cleanIntNodes(IntNode* node);
-void clean(StringNode* node);
-void sort(StringNode* node);
-void processCommandLine(StringNode* first);
+void cleanStringNodes(StringNode* node); //czysci liste StringNode
+void cleanIntNodes(IntNode* node); //czysci liste IntNode
+void clean(StringNode* node); //przerywa za[petlenie i usuwa wszystkie dane
+void sort(StringNode* node); //sortuje wszyskie podlisty w zapetlonej liscie
+void processCommandLine(StringNode* first); //analiza i zastosowanie komend
 
 void main()
 {
   StringNode* node = readData();
+  if(node == NULL)
+  {
+    puts("No data");
+    return;
+  }
   sort(node);
   puts("Read all data");
+  StringNode* first = node;
+  while(node->next != first) node = node->next;
   processCommandLine(node);
   clean(node);
 }
@@ -45,7 +50,11 @@ StringNode* readData()
 
   while(!emptyLine())
   {
-      if( ! (fgets(lineBuffer, bufferSize, stdin) && isLineCorrect(lineBuffer, delimeters)) )
+      if(!fgets(lineBuffer, bufferSize, stdin))
+      {
+        break;
+      }
+      if( !isLineCorrect(lineBuffer, delimeters) )
       {
         puts("Incorrect line");
         continue;
@@ -95,9 +104,12 @@ StringNode* readData()
 
 void clean(StringNode* node)
 {
-  StringNode* first = node->next;
-  node->next = NULL;
-  cleanStringNodes(first);
+  if(node != NULL)
+  {
+    StringNode* first = node->next;
+    node->next = NULL;
+    cleanStringNodes(first);
+  }
 }
 void cleanStringNodes(StringNode* node)
 {
@@ -160,37 +172,6 @@ int emptyLine()
   return 0;
 }
 
-int testLineCorrect()
-{
-  const int bufferSize = 1024;
-  char* const lineBuffer = malloc(sizeof(char) * bufferSize);
-  memset(lineBuffer, '\0', bufferSize);
-  const char* const delimeters = " \n";
-  while(!emptyLine())
-  {
-    fgets(lineBuffer, bufferSize, stdin);
-    if(!isLineCorrect(lineBuffer, delimeters)) puts("Incorrect line");
-  }
-  free(lineBuffer);
-}
-
-void printLists(StringNode* first)
-{
-  StringNode* lastStringNode = first;
-  while(lastStringNode != NULL)
-  {
-    printf("%s ", lastStringNode->string);
-    IntNode* lastIntNode = lastStringNode->first;
-    while(lastIntNode != NULL)
-    {
-      printf("%d ", lastIntNode->value);
-      lastIntNode = lastIntNode->next;
-    }
-    puts("0");
-    lastStringNode = lastStringNode->next;
-  }
-}
-
 void sortIntNodes(IntNode* first)
 {
   int count = 0;
@@ -226,7 +207,7 @@ void sort(StringNode* node)
 {
   StringNode* lastStringNode = node;
   StringNode* first = node;
-  if(lastStringNode != NULL)
+  if(lastStringNode != NULL) //gdy jest tylko 1 element jest zapetlony na sam siebie
   {
     sortIntNodes(lastStringNode->first);
     lastStringNode = lastStringNode->next;
@@ -254,35 +235,35 @@ void processCommandLine(StringNode* first)
     {
         if(current == NULL)
         {
-          puts("Empty list");
+          puts("\tEmpty list");
           return;
         }
         else
         {
           current = current->next;
         }
-        puts("Moved to the next element");
+        puts("\tMoved to the next element");
     }
     else if(sscanf(lineBuffer, "%127s", stringBuffer) && !strcmp("delete", stringBuffer))
     {
       StringNode* toDelete = current->next;
       if(toDelete == current)
       {
-        puts("Only 1 link - can't delete");
+        puts("\tOnly 1 link - can't delete");
         continue;
       }
       StringNode* next = toDelete->next;
       toDelete->next = NULL;
       current->next = next;
       cleanStringNodes(toDelete);
-      puts("Deleted");
+      puts("\tDeleted");
     }
     else if(sscanf(lineBuffer, "add %d", &intBuffer))
     {
       StringNode* toAdd = current->next;
       if(intBuffer <= 0)
       {
-        puts("Incorrect number");
+        puts("\tIncorrect number");
       }
       else
       {
@@ -291,6 +272,7 @@ void processCommandLine(StringNode* first)
           toAdd->first = malloc(sizeof(IntNode));
           toAdd->first->value = intBuffer;
           toAdd->first->next = NULL;
+          printf("\tAdded %d\n", intBuffer);
         }
         else
         {
@@ -302,16 +284,28 @@ void processCommandLine(StringNode* first)
           last->next = malloc(sizeof(IntNode));
           last->next->value = intBuffer;
           last->next->next = NULL;
-          puts("Last");
           sortIntNodes(toAdd->first);
-          printf("Added %d\n", intBuffer);
+          printf("\tAdded %d\n", intBuffer);
         }
       }
+    }
+    else if(sscanf(lineBuffer, "add %20s", stringBuffer))
+    {
+      StringNode* toAdd = current->next;
+      StringNode* next = toAdd->next;
+      StringNode* newNode = malloc(sizeof(StringNode));
+      newNode->first = NULL;
+      stringBuffer[20] = '\0';
+      strcpy(newNode->string, stringBuffer);
+      newNode->next = next;
+      toAdd->next = newNode;
+      current = toAdd;
+      memset(stringBuffer, '\0', 128);
     }
     else if(sscanf(lineBuffer, "%127s", stringBuffer) && !strcmp("print", stringBuffer))
     {
       StringNode* nodeToPrint = current->next;
-      printf("%s", nodeToPrint->string);
+      printf("\t%s", nodeToPrint->string);
       IntNode* last = nodeToPrint->first;
       while(last != NULL)
       {
@@ -326,10 +320,22 @@ void processCommandLine(StringNode* first)
       free(lineBuffer);
       return;
     }
+    else if(sscanf(lineBuffer, "%127s", stringBuffer) && !strcmp("help", stringBuffer))
+    {
+      puts("\t        next - move to the next element");
+      puts("\tadd <number> - add number to current list");
+      puts("\tadd <string> - add new element with empty list");
+      puts("\t      delete - remove current element");
+      puts("\t       print - print current list");
+      puts("\t        exit - clean and exit program");
+    }
     else
     {
-
+      puts("\tIncorrect command - type help");
     }
+
+    memset(lineBuffer, '\0', bufferSize);
+    memset(stringBuffer, '\0', 128);
   }
   free(lineBuffer);
 }
