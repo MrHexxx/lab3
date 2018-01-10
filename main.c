@@ -301,7 +301,7 @@ void processCommandLine(StringNode* first)
       toAdd->next = newNode;
       current = toAdd;
       memset(stringBuffer, '\0', 128);
-      printf("\tAdded %20s\n", newNode->string);
+      printf("\tAdded %s\n", newNode->string);
     }
     else if(sscanf(lineBuffer, "%127s", stringBuffer) && !strcmp("print", stringBuffer))
     {
