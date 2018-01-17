@@ -17,6 +17,7 @@ void processCommandLine(StringNode* first); //analiza i zastosowanie komend
 
 void main()
 {
+  puts("<label> <int>* 0");
   StringNode* node = readData();
   if(node == NULL)
   {
@@ -149,7 +150,8 @@ int isLineCorrect(const char* line, const char* delimeters)
     noError = noError && (intBuffer >= 0);
     if(intBuffer == 0)
     {
-      token = strtok(NULL, delimeters);
+      token = strtok(NULL, d
+struct sStrelimeters);
       noError = noError && (token == NULL); //nie ma nic wiecej
       free(buffer);
       return noError;
