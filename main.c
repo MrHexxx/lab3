@@ -150,8 +150,7 @@ int isLineCorrect(const char* line, const char* delimeters)
     noError = noError && (intBuffer >= 0);
     if(intBuffer == 0)
     {
-      token = strtok(NULL, d
-struct sStrelimeters);
+      token = strtok(NULL, delimeters);
       noError = noError && (token == NULL); //nie ma nic wiecej
       free(buffer);
       return noError;
