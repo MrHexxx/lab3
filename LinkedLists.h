@@ -1,3 +1,5 @@
+//Mateusz Okulus
+//PRI3 
 #ifndef LINKED_LISTS
 #define LINKED_LISTS
 
